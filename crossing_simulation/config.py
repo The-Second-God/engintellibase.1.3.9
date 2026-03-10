@@ -12,14 +12,14 @@ class Config:
     
     # ==================== 行人参数 ====================
     PEDESTRIAN_COUNT = 10
-    PEDESTRIAN_RADIUS = 0.25
+    PEDESTRIAN_RADIUS = 0.125  # 减半
     PEDESTRIAN_SPEED_MIN = 1.0
     PEDESTRIAN_SPEED_MAX = 1.5
     PEDESTRIAN_MASS = 70.0
     
     # ==================== 自行车参数 ====================
     BICYCLE_COUNT = 4
-    BICYCLE_RADIUS = 0.5
+    BICYCLE_RADIUS = 0.25  # 减半
     BICYCLE_SPEED_MIN = 3.0
     BICYCLE_SPEED_MAX = 5.0
     BICYCLE_MASS = 80.0
@@ -33,9 +33,8 @@ class Config:
     SOCIAL_FORCE_A = 2000.0
     SOCIAL_FORCE_B = 0.08
     
-    # 边界力参数
-    WALL_FORCE_A = 2000.0
-    WALL_FORCE_B = 0.1
+    # 边界参数
+    ROAD_BORDER_THRESHOLD = 0.1
     
     # 视野参数
     VISION_ANGLE = 180.0
@@ -44,6 +43,12 @@ class Config:
     # ==================== 仿真参数 ====================
     DT = 0.05
     MAX_SIMULATION_TIME = 60.0
+    
+    # ==================== 实体生成参数 ====================
+    MAX_ACTIVE_ENTITIES = 20
+    PEDESTRIAN_SPAWN_PROBABILITY = 0.05  # 每步生成行人的概率
+    BICYCLE_SPAWN_PROBABILITY = 0.02     # 每步生成自行车的概率
+    MIN_SPAWN_INTERVAL = 1.0             # 最小生成间隔（秒）
     
     # ==================== 可视化参数 ====================
     FPS = 30

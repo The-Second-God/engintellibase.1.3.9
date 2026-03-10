@@ -34,21 +34,7 @@ class SocialForceModel:
         
         return direction * force_magnitude
     
-    def calculate_wall_force(self, entity: Entity) -> Vector2D:
-        total_force = Vector2D(0, 0)
-        
-        for wall in self.environment.walls:
-            distance = wall.distance_to_point(entity.position)
-            effective_distance = distance - entity.radius
-            
-            if effective_distance < Config.VISION_RANGE:
-                closest_point = wall.get_closest_point(entity.position)
-                direction = (entity.position - closest_point).normalize()
-                
-                force_magnitude = Config.WALL_FORCE_A * math.exp(-effective_distance / Config.WALL_FORCE_B)
-                total_force = total_force + direction * force_magnitude
-        
-        return total_force
+
     
     def calculate_total_force(self, entity: Entity, neighbors: List[Entity]) -> Vector2D:
         total_force = Vector2D(0, 0)
@@ -59,9 +45,6 @@ class SocialForceModel:
         for neighbor in neighbors:
             social_force = self.calculate_social_force(entity, neighbor)
             total_force = total_force + social_force
-        
-        wall_force = self.calculate_wall_force(entity)
-        total_force = total_force + wall_force
         
         return total_force
     
@@ -82,13 +65,46 @@ class SocialForceModel:
             entity.velocity = entity.velocity.normalize() * max_speed
         
         old_position = Vector2D(entity.position.x, entity.position.y)
-        entity.position = entity.position + entity.velocity * dt
+        new_position = entity.position + entity.velocity * dt
+        
+        new_position = self._enforce_road_boundaries(entity, new_position)
+        
+        entity.position = new_position
         
         entity.acceleration = acceleration
         entity.distance_traveled += (entity.position - old_position).magnitude()
         entity.travel_time += dt
         
         entity.update_trail()
+    
+    def _enforce_road_boundaries(self, entity: Entity, position: Vector2D) -> Vector2D:
+        from .entity import Direction
+        center_x = Config.CROSSING_WIDTH / 2
+        center_y = Config.CROSSING_HEIGHT / 2
+        half_road = Config.ROAD_WIDTH / 2
+        threshold = Config.ROAD_BORDER_THRESHOLD
+        
+        is_east_west = entity.direction in [Direction.EAST, Direction.WEST]
+        is_north_south = entity.direction in [Direction.NORTH, Direction.SOUTH]
+        
+        in_crossing = (
+            (center_x - half_road <= position.x <= center_x + half_road) and
+            (center_y - half_road <= position.y <= center_y + half_road)
+        )
+        
+        if is_east_west:
+            if not in_crossing:
+                min_y = center_y - half_road + threshold
+                max_y = center_y + half_road - threshold
+                position.y = max(min(position.y, max_y), min_y)
+        
+        if is_north_south:
+            if not in_crossing:
+                min_x = center_x - half_road + threshold
+                max_x = center_x + half_road - threshold
+                position.x = max(min(position.x, max_x), min_x)
+        
+        return position
     
     def check_collision(self, entity: Entity, neighbors: List[Entity]) -> int:
         collision_count = 0
