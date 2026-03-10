@@ -45,10 +45,10 @@ class Config:
     MAX_SIMULATION_TIME = 60.0
     
     # ==================== 实体生成参数 ====================
-    MAX_ACTIVE_ENTITIES = 20
-    PEDESTRIAN_SPAWN_PROBABILITY = 0.05  # 每步生成行人的概率
-    BICYCLE_SPAWN_PROBABILITY = 0.02     # 每步生成自行车的概率
-    MIN_SPAWN_INTERVAL = 1.0             # 最小生成间隔（秒）
+    MAX_ACTIVE_ENTITIES = 30  # 增加最大活跃实体数
+    PEDESTRIAN_SPAWN_PROBABILITY = 0.3   # 增加行人生成概率
+    BICYCLE_SPAWN_PROBABILITY = 0.12     # 增加自行车生成概率
+    MIN_SPAWN_INTERVAL = 0.5             # 减少生成间隔
     
     # ==================== 可视化参数 ====================
     FPS = 30
