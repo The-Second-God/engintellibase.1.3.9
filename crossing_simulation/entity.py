@@ -206,9 +206,37 @@ class EntityManager:
             self.all_entities.append(bicycle)
             self._next_id += 1
     
+    def create_entity(self, entity_type: str) -> bool:
+        if len([e for e in self.all_entities if e.is_active]) >= Config.MAX_ACTIVE_ENTITIES:
+            return False
+        
+        direction = random.choice(list(Direction))
+        position = self._generate_spawn_position(direction)
+        speed = self._generate_random_speed(entity_type)
+        
+        if entity_type == 'pedestrian':
+            entity = Pedestrian(
+                entity_id=self._next_id,
+                position=position,
+                direction=direction,
+                desired_speed=speed
+            )
+            self.pedestrians.append(entity)
+        else:
+            entity = Bicycle(
+                entity_id=self._next_id,
+                position=position,
+                direction=direction,
+                desired_speed=speed
+            )
+            self.bicycles.append(entity)
+        
+        self.all_entities.append(entity)
+        self._next_id += 1
+        return True
+    
     def initialize(self):
-        self.create_pedestrians()
-        self.create_bicycles()
+        pass  # 不再一次性生成所有实体
     
     def get_neighbors_in_vision(self, entity: Entity) -> List[Entity]:
         neighbors = []

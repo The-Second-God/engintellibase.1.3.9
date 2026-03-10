@@ -26,19 +26,19 @@ class Config:
     
     # ==================== 社会力模型参数 ====================
     # 目标吸引力
-    DESIRED_FORCE_FACTOR = 1.0
+    DESIRED_FORCE_FACTOR = 0.5  # 减半
     RELAXATION_TIME = 0.5
     
     # 避让力参数
-    SOCIAL_FORCE_A = 2000.0
-    SOCIAL_FORCE_B = 0.08
+    SOCIAL_FORCE_A = 3000.0  # 增大强度
+    SOCIAL_FORCE_B = 0.2  # 增大作用范围至约2m
     
     # 边界参数
     ROAD_BORDER_THRESHOLD = 0.1
     
     # 视野参数
     VISION_ANGLE = 180.0
-    VISION_RANGE = 5.0
+    VISION_RANGE = 4.0  # 减小到4m
     
     # ==================== 仿真参数 ====================
     DT = 0.05

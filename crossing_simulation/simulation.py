@@ -1,6 +1,7 @@
 """
 仿真引擎模块 - 主循环和状态管理
 """
+import random
 from typing import List, Dict, Any, Optional, Callable
 from .config import Config
 from .entity import Entity, EntityManager
@@ -21,6 +22,8 @@ class SimulationEngine:
         
         self.collision_count = 0
         self.completed_count = 0
+        
+        self.last_spawn_time = 0.0
         
         self.on_step_complete: Optional[Callable[[Dict], None]] = None
         self.on_entity_complete: Optional[Callable[[Entity], None]] = None
@@ -44,6 +47,8 @@ class SimulationEngine:
         
         dt = Config.DT
         
+        self._spawn_entities()
+        
         for entity in self.entity_manager.all_entities:
             if not entity.is_active:
                 continue
@@ -62,6 +67,7 @@ class SimulationEngine:
                     self.on_entity_complete(entity)
         
         self._resolve_all_collisions()
+        self.entity_manager.remove_inactive()
         
         self.time += dt
         self.frame += 1
@@ -75,6 +81,22 @@ class SimulationEngine:
             self.on_step_complete(state)
         
         return state
+    
+    def _spawn_entities(self):
+        if self.time - self.last_spawn_time < Config.MIN_SPAWN_INTERVAL:
+            return
+        
+        active_count = len([e for e in self.entity_manager.all_entities if e.is_active])
+        if active_count >= Config.MAX_ACTIVE_ENTITIES:
+            return
+        
+        if random.random() < Config.PEDESTRIAN_SPAWN_PROBABILITY:
+            self.entity_manager.create_entity('pedestrian')
+            self.last_spawn_time = self.time
+        
+        if random.random() < Config.BICYCLE_SPAWN_PROBABILITY:
+            self.entity_manager.create_entity('bicycle')
+            self.last_spawn_time = self.time
     
     def _resolve_all_collisions(self):
         entities = self.entity_manager.all_entities
