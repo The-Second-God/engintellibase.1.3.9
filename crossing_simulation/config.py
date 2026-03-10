@@ -54,11 +54,11 @@ class Config:
     SHOW_VISION_CONE = False
     
     # ==================== 颜色配置 ====================
-    COLOR_PEDESTRIAN = (0, 150, 255)
-    COLOR_BICYCLE = (255, 100, 0)
-    COLOR_BACKGROUND = (240, 240, 240)
-    COLOR_ROAD = (180, 180, 180)
-    COLOR_CROSSWALK = (200, 200, 200)
+    COLOR_PEDESTRIAN = (0, 0.588, 1.0)  # (0, 150, 255) / 255
+    COLOR_BICYCLE = (1.0, 0.392, 0)      # (255, 100, 0) / 255
+    COLOR_BACKGROUND = (0.941, 0.941, 0.941)  # (240, 240, 240) / 255
+    COLOR_ROAD = (0.706, 0.706, 0.706)   # (180, 180, 180) / 255
+    COLOR_CROSSWALK = (0.784, 0.784, 0.784)  # (200, 200, 200) / 255
     
     @classmethod
     def update(cls, **kwargs):
