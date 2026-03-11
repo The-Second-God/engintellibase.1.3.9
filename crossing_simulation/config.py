@@ -40,6 +40,12 @@ class Config:
     VISION_ANGLE = 180.0
     VISION_RANGE = 4.0  # 减小到4m
     
+    # ==================== 避让距离参数 ====================
+    AVOIDANCE_DISTANCE_FACTOR = 1.5  # 避让距离系数（相对于首次相遇距离）
+    MIN_AVOIDANCE_DISTANCE = 0.3     # 最小避让距离（米）
+    MAX_AVOIDANCE_DISTANCE = 1.0     # 最大避让距离（米）
+    AVOIDANCE_FORCE_MULTIPLIER = 2.0 # 避让力倍增系数
+    
     # ==================== 仿真参数 ====================
     DT = 0.05
     MAX_SIMULATION_TIME = 60.0

@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from typing import List, Tuple, Optional
 
 from .config import Config
+from .avoidance_manager import AvoidanceDistanceManager
 
 
 class Direction(Enum):
@@ -81,6 +82,9 @@ class Entity:
         self.is_active = True
         self.travel_time = 0.0
         self.distance_traveled = 0.0
+        
+        self.first_encounter_positions: Dict[int, Vector2D] = {}
+        self.encountered_entities: set = set()
     
     def _calculate_target(self) -> Vector2D:
         margin = 1.0
@@ -123,6 +127,22 @@ class Entity:
         angle = math.degrees(math.acos(max(-1, min(1, dot_product))))
         
         return angle <= Config.VISION_ANGLE / 2
+    
+    def record_first_encounter(self, other: 'Entity') -> bool:
+        if other.id in self.encountered_entities:
+            return False
+        
+        self.encountered_entities.add(other.id)
+        self.first_encounter_positions[other.id] = Vector2D(
+            self.position.x, self.position.y
+        )
+        return True
+    
+    def has_encountered(self, other_id: int) -> bool:
+        return other_id in self.encountered_entities
+    
+    def get_first_encounter_position(self, other_id: int) -> Optional[Vector2D]:
+        return self.first_encounter_positions.get(other_id)
 
 
 class Pedestrian(Entity):
@@ -143,6 +163,13 @@ class EntityManager:
         self.bicycles: List[Bicycle] = []
         self.all_entities: List[Entity] = []
         self._next_id = 0
+        
+        # 实体类型映射表
+        self._entity_type_map = {
+            'pedestrian': Pedestrian,
+            'bicycle': Bicycle
+        }
+        self.avoidance_manager = AvoidanceDistanceManager()
     
     def _generate_spawn_position(self, direction: Direction) -> Vector2D:
         road_half = Config.ROAD_WIDTH / 2
@@ -168,72 +195,58 @@ class EntityManager:
         params = Config.get_entity_params(entity_type)
         return random.uniform(params['speed_min'], params['speed_max'])
     
-    def create_pedestrians(self, count: int = None):
-        if count is None:
-            count = Config.PEDESTRIAN_COUNT
-        
-        for _ in range(count):
-            direction = random.choice(list(Direction))
-            position = self._generate_spawn_position(direction)
-            speed = self._generate_random_speed('pedestrian')
-            
-            pedestrian = Pedestrian(
-                entity_id=self._next_id,
-                position=position,
-                direction=direction,
-                desired_speed=speed
-            )
-            self.pedestrians.append(pedestrian)
-            self.all_entities.append(pedestrian)
-            self._next_id += 1
-    
-    def create_bicycles(self, count: int = None):
-        if count is None:
-            count = Config.BICYCLE_COUNT
-        
-        for _ in range(count):
-            direction = random.choice(list(Direction))
-            position = self._generate_spawn_position(direction)
-            speed = self._generate_random_speed('bicycle')
-            
-            bicycle = Bicycle(
-                entity_id=self._next_id,
-                position=position,
-                direction=direction,
-                desired_speed=speed
-            )
-            self.bicycles.append(bicycle)
-            self.all_entities.append(bicycle)
-            self._next_id += 1
-    
-    def create_entity(self, entity_type: str) -> bool:
+    def _create_single_entity(self, entity_type: str) -> Optional[Entity]:
+        """创建单个实体，返回创建的实体对象，如果达到最大数量则返回 None"""
         if len([e for e in self.all_entities if e.is_active]) >= Config.MAX_ACTIVE_ENTITIES:
-            return False
+            return None
         
         direction = random.choice(list(Direction))
         position = self._generate_spawn_position(direction)
         speed = self._generate_random_speed(entity_type)
         
+        # 使用类型映射创建实体
+        entity_class = self._entity_type_map.get(entity_type)
+        if entity_class is None:
+            raise ValueError(f"Unknown entity type: {entity_type}")
+        
+        entity = entity_class(
+            entity_id=self._next_id,
+            position=position,
+            direction=direction,
+            desired_speed=speed
+        )
+        
+        # 添加到对应的类型列表
         if entity_type == 'pedestrian':
-            entity = Pedestrian(
-                entity_id=self._next_id,
-                position=position,
-                direction=direction,
-                desired_speed=speed
-            )
             self.pedestrians.append(entity)
-        else:
-            entity = Bicycle(
-                entity_id=self._next_id,
-                position=position,
-                direction=direction,
-                desired_speed=speed
-            )
+        elif entity_type == 'bicycle':
             self.bicycles.append(entity)
         
         self.all_entities.append(entity)
         self._next_id += 1
-        return True
+        
+        return entity
+    
+    def create_pedestrians(self, count: int = None):
+        """创建指定数量的行人实体"""
+        if count is None:
+            count = Config.PEDESTRIAN_COUNT
+        
+        for _ in range(count):
+            self._create_single_entity('pedestrian')
+    
+    def create_bicycles(self, count: int = None):
+        """创建指定数量的自行车实体"""
+        if count is None:
+            count = Config.BICYCLE_COUNT
+        
+        for _ in range(count):
+            self._create_single_entity('bicycle')
+    
+    def create_entity(self, entity_type: str) -> bool:
+        """创建单个实体，返回是否创建成功"""
+        entity = self._create_single_entity(entity_type)
+        return entity is not None
     
     def initialize(self):
         pass  # 不再一次性生成所有实体
@@ -244,9 +257,19 @@ class EntityManager:
             if other.id != entity.id and other.is_active:
                 if entity.is_in_vision(other):
                     neighbors.append(other)
+                    self._record_mutual_encounter(entity, other)
         return neighbors
     
+    def _record_mutual_encounter(self, entity1: Entity, entity2: Entity):
+        entity1.record_first_encounter(entity2)
+        entity2.record_first_encounter(entity1)
+        self.avoidance_manager.check_and_record_encounter(entity1, entity2)
+    
     def remove_inactive(self):
+        for entity in self.all_entities:
+            if not entity.is_active:
+                self.avoidance_manager.remove_entity_records(entity.id)
+        
         self.all_entities = [e for e in self.all_entities if e.is_active]
         self.pedestrians = [p for p in self.pedestrians if p.is_active]
         self.bicycles = [b for b in self.bicycles if b.is_active]

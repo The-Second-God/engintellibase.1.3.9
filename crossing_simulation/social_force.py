@@ -1,17 +1,21 @@
 """
 社会力模型模块 - 处理避让行为和运动计算
-基于Helbing的社会力模型，结合180°视野限制
+基于Helbing的社会力模型，结合180°视野限制和避让距离机制
 """
 import math
-from typing import List
-from .entity import Entity, Vector2D
+from typing import List, Tuple
+from .entity import Entity, Vector2D, EntityManager
 from .environment import CrossingEnvironment
 from .config import Config
 
 
 class SocialForceModel:
-    def __init__(self, environment: CrossingEnvironment):
+    def __init__(self, environment: CrossingEnvironment, entity_manager: EntityManager = None):
         self.environment = environment
+        self.entity_manager = entity_manager
+    
+    def set_entity_manager(self, entity_manager: EntityManager):
+        self.entity_manager = entity_manager
     
     def calculate_desired_force(self, entity: Entity) -> Vector2D:
         desired_velocity = entity.desired_direction * entity.desired_speed
@@ -34,6 +38,29 @@ class SocialForceModel:
         
         return direction * force_magnitude
     
+    def calculate_avoidance_force(self, entity: Entity, other: Entity) -> Tuple[Vector2D, bool]:
+        if not self.entity_manager:
+            return Vector2D(0, 0), False
+        
+        avoidance_manager = self.entity_manager.avoidance_manager
+        should_avoid, distance_exceeded = avoidance_manager.should_trigger_avoidance(entity, other)
+        
+        if not should_avoid:
+            return Vector2D(0, 0), False
+        
+        diff = entity.position - other.position
+        distance = diff.magnitude()
+        
+        if distance < 1e-6:
+            return Vector2D(0, 0), False
+        
+        direction = diff.normalize()
+        
+        avoidance_distance = avoidance_manager.get_avoidance_distance(entity.id, other.id)
+        force_magnitude = Config.SOCIAL_FORCE_A * Config.AVOIDANCE_FORCE_MULTIPLIER * math.exp(-distance / avoidance_distance)
+        
+        return direction * force_magnitude, True
+    
 
     
     def calculate_total_force(self, entity: Entity, neighbors: List[Entity]) -> Vector2D:
@@ -45,6 +72,10 @@ class SocialForceModel:
         for neighbor in neighbors:
             social_force = self.calculate_social_force(entity, neighbor)
             total_force = total_force + social_force
+            
+            avoidance_force, is_avoiding = self.calculate_avoidance_force(entity, neighbor)
+            if is_avoiding:
+                total_force = total_force + avoidance_force
         
         return total_force
     

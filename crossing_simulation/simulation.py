@@ -13,7 +13,7 @@ class SimulationEngine:
     def __init__(self):
         self.environment = CrossingEnvironment()
         self.entity_manager = EntityManager()
-        self.social_force = SocialForceModel(self.environment)
+        self.social_force = SocialForceModel(self.environment, self.entity_manager)
         
         self.time = 0.0
         self.frame = 0
@@ -39,6 +39,7 @@ class SimulationEngine:
     
     def reset(self):
         self.entity_manager = EntityManager()
+        self.social_force.set_entity_manager(self.entity_manager)
         self.initialize()
     
     def step(self) -> Dict[str, Any]:

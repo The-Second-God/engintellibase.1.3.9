@@ -6,6 +6,7 @@ from .entity import Entity, Pedestrian, Bicycle, EntityManager, Direction, Vecto
 from .environment import CrossingEnvironment, Wall
 from .social_force import SocialForceModel
 from .simulation import SimulationEngine, SimulationRunner
+from .avoidance_manager import AvoidanceDistanceManager, EncounterRecord
 from .visualization import Visualizer, AnimatedVisualizer
 
 __all__ = [
@@ -14,5 +15,6 @@ __all__ = [
     'CrossingEnvironment', 'Wall',
     'SocialForceModel',
     'SimulationEngine', 'SimulationRunner',
+    'AvoidanceDistanceManager', 'EncounterRecord',
     'Visualizer', 'AnimatedVisualizer',
 ]
