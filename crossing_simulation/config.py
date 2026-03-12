@@ -11,37 +11,43 @@ class Config:
     ROAD_WIDTH = 3.0
     
     # ==================== 行人参数 ====================
-    PEDESTRIAN_COUNT = 10
-    PEDESTRIAN_RADIUS = 0.125  # 减半
-    PEDESTRIAN_SPEED_MIN = 1.0
-    PEDESTRIAN_SPEED_MAX = 1.5
+    PEDESTRIAN_COUNT = 15
+    PEDESTRIAN_RADIUS = 0.100  # 减半
+    PEDESTRIAN_SPEED_MIN = 0.5
+    PEDESTRIAN_SPEED_MAX = 1.2
     PEDESTRIAN_MASS = 70.0
     
     # ==================== 自行车参数 ====================
-    BICYCLE_COUNT = 4
-    BICYCLE_RADIUS = 0.25  # 减半
+    BICYCLE_COUNT = 5
+    BICYCLE_RADIUS = 0.20  # 减半
     BICYCLE_SPEED_MIN = 3.0
     BICYCLE_SPEED_MAX = 5.0
     BICYCLE_MASS = 80.0
     
     # ==================== 社会力模型参数 ====================
     # 目标吸引力
-    DESIRED_FORCE_FACTOR = 0.5  # 减半
+    DESIRED_FORCE_FACTOR = 1.0  # 减半
     RELAXATION_TIME = 0.5
     
     # 避让力参数
     SOCIAL_FORCE_A = 3000.0  # 增大强度
     SOCIAL_FORCE_B = 0.2  # 增大作用范围至约2m
     
+    # 避让触发距离（按实体类型组合）
+    AVOIDANCE_DISTANCE_PEDESTRIAN_PEDESTRIAN = 0.05  # 人与人
+    AVOIDANCE_DISTANCE_PEDESTRIAN_BICYCLE = 0.2    # 人与车
+    AVOIDANCE_DISTANCE_BICYCLE_BICYCLE = 0.2       # 车与车
+    AVOIDANCE_FORCE_MULTIPLIER = 1.0  # 避让力放大系数
+    
     # 边界参数
     ROAD_BORDER_THRESHOLD = 0.1
     
     # 视野参数
-    VISION_ANGLE = 180.0
-    VISION_RANGE = 4.0  # 减小到4m
+    VISION_ANGLE = 120.0
+    VISION_RANGE = 3.0  # 减小到4m
     
     # ==================== 避让距离参数 ====================
-    AVOIDANCE_DISTANCE_FACTOR = 1.5  # 避让距离系数（相对于首次相遇距离）
+    AVOIDANCE_DISTANCE_FACTOR = 1.0  # 避让距离系数（相对于首次相遇距离）
     MIN_AVOIDANCE_DISTANCE = 0.3     # 最小避让距离（米）
     MAX_AVOIDANCE_DISTANCE = 1.0     # 最大避让距离（米）
     AVOIDANCE_FORCE_MULTIPLIER = 2.0 # 避让力倍增系数
@@ -62,7 +68,7 @@ class Config:
     WINDOW_HEIGHT = 800
     SHOW_TRAILS = True
     TRAIL_LENGTH = 50
-    SHOW_VISION_CONE = False
+    SHOW_VISION_CONE = True
     
     # ==================== 颜色配置 ====================
     COLOR_PEDESTRIAN = (0, 0.588, 1.0)  # (0, 150, 255) / 255

@@ -34,9 +34,24 @@ class SocialForceModel:
         combined_radius = entity.radius + other.radius
         effective_distance = distance - combined_radius
         
-        force_magnitude = Config.SOCIAL_FORCE_A * math.exp(-effective_distance / Config.SOCIAL_FORCE_B)
+        # 根据实体类型获取避让触发距离
+        if entity.type == 'pedestrian' and other.type == 'pedestrian':
+            avoidance_distance = Config.AVOIDANCE_DISTANCE_PEDESTRIAN_PEDESTRIAN
+        elif (entity.type == 'pedestrian' and other.type == 'bicycle') or \
+             (entity.type == 'bicycle' and other.type == 'pedestrian'):
+            avoidance_distance = Config.AVOIDANCE_DISTANCE_PEDESTRIAN_BICYCLE
+        else:  # bicycle and bicycle
+            avoidance_distance = Config.AVOIDANCE_DISTANCE_BICYCLE_BICYCLE
         
-        return direction * force_magnitude
+        # 只有当有效距离小于避让触发距离时才计算避让力
+        if effective_distance < avoidance_distance:
+            force_magnitude = Config.SOCIAL_FORCE_A * math.exp(-effective_distance / Config.SOCIAL_FORCE_B)
+            # 避让力放大
+            if effective_distance < 0:  # 发生重叠
+                force_magnitude *= Config.AVOIDANCE_FORCE_MULTIPLIER
+            return direction * force_magnitude
+        else:
+            return Vector2D(0, 0)
     
     def calculate_avoidance_force(self, entity: Entity, other: Entity) -> Tuple[Vector2D, bool]:
         if not self.entity_manager:
