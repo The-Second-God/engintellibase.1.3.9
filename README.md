@@ -53,9 +53,10 @@ crossing_simulation/
 | | DESIRED_FORCE_FACTOR | 目标吸引力系数 | 0.5 |
 | 视野参数 | VISION_ANGLE | 视野角度 | 180° |
 | | VISION_RANGE | 视野范围 | 4.0m |
-| 生成参数 | MAX_ACTIVE_ENTITIES | 最大活跃实体数 | 20 |
-| | PEDESTRIAN_SPAWN_PROBABILITY | 行人生成概率 | 0.05 |
-| | BICYCLE_SPAWN_PROBABILITY | 自行车生成概率 | 0.02 |
+| 生成参数 | MAX_ACTIVE_ENTITIES | 最大活跃实体数 | 30 |
+| | PEDESTRIAN_SPAWN_PROBABILITY | 行人生成概率 | 0.3 |
+| | BICYCLE_SPAWN_PROBABILITY | 自行车生成概率 | 0.12 |
+| | MIN_SPAWN_INTERVAL | 最小生成间隔 | 0.5s |
 
 ## 运行方法
 
