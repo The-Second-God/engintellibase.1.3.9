@@ -19,9 +19,9 @@ class Config:
     
     # ==================== 自行车参数 ====================
     BICYCLE_COUNT = 5
-    BICYCLE_RADIUS = 0.20  # 减半
-    BICYCLE_SPEED_MIN = 3.0
-    BICYCLE_SPEED_MAX = 5.0
+    BICYCLE_RADIUS = 0.15  # 减半
+    BICYCLE_SPEED_MIN = 1.0
+    BICYCLE_SPEED_MAX = 3.0
     BICYCLE_MASS = 80.0
     
     # ==================== 社会力模型参数 ====================
@@ -31,7 +31,7 @@ class Config:
     
     # 避让力参数
     SOCIAL_FORCE_A = 3000.0  # 增大强度
-    SOCIAL_FORCE_B = 0.2  # 增大作用范围至约2m
+    SOCIAL_FORCE_B = 0.08  # 增大作用范围至约2m
     
     # 避让触发距离（按实体类型组合）
     AVOIDANCE_DISTANCE_PEDESTRIAN_PEDESTRIAN = 0.05  # 人与人
@@ -68,7 +68,7 @@ class Config:
     WINDOW_HEIGHT = 800
     SHOW_TRAILS = True
     TRAIL_LENGTH = 50
-    SHOW_VISION_CONE = True
+    SHOW_VISION_CONE = False
     
     # ==================== 颜色配置 ====================
     COLOR_PEDESTRIAN = (0, 0.588, 1.0)  # (0, 150, 255) / 255
