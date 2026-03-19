@@ -37,7 +37,7 @@ class Config:
     AVOIDANCE_DISTANCE_PEDESTRIAN_PEDESTRIAN = 0.02  # 行人-行人避让触发距离（米）
     AVOIDANCE_DISTANCE_PEDESTRIAN_BICYCLE = 0.20  # 行人-自行车避让触发距离（米）
     AVOIDANCE_DISTANCE_BICYCLE_BICYCLE = 0.20  # 自行车-自行车避让触发距离（米）
-    BASIC_AVOIDANCE_FORCE_MULTIPLIER = 2.0  # 基于距离的避让力放大系数，距离小于触发距离时的力放大倍数
+    AVOIDANCE_FORCE_MULTIPLIER = 2.0  # 避让力放大系数，距离小于触发距离时的力放大倍数
     
     # 边界参数
     ROAD_BORDER_THRESHOLD = 0.15  # 道路边界阈值（米），用于边界约束
@@ -50,7 +50,7 @@ class Config:
     AVOIDANCE_DISTANCE_FACTOR = 0.2  # 基于首次相遇距离的避让距离系数
     MIN_AVOIDANCE_DISTANCE = 0.05  # 最小避让距离（米），无论首次相遇距离多小
     MAX_AVOIDANCE_DISTANCE = 0.3  # 最大避让距离（米），无论首次相遇距离多大
-    ENCOUNTER_AVOIDANCE_FORCE_MULTIPLIER = 4.0  # 基于首次相遇的避让力倍增系数
+    AVOIDANCE_FORCE_MULTIPLIER = 4.0  # 基于首次相遇的避让力倍增系数
     
     # ==================== 仿真参数 ====================
     DT = 0.02  # 时间步长（秒），仿真的时间精度

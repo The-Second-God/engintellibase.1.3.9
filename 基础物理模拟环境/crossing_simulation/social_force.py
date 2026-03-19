@@ -48,7 +48,7 @@ class SocialForceModel:
             force_magnitude = Config.SOCIAL_FORCE_A * math.exp(-effective_distance / Config.SOCIAL_FORCE_B)
             # 避让力放大
             if effective_distance < 0:  # 发生重叠
-                force_magnitude *= Config.BASIC_AVOIDANCE_FORCE_MULTIPLIER
+                force_magnitude *= Config.AVOIDANCE_FORCE_MULTIPLIER
             return direction * force_magnitude
         else:
             return Vector2D(0, 0)
