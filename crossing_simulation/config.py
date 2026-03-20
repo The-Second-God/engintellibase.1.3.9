@@ -8,44 +8,44 @@ class Config:
     # ==================== 环境参数 ====================
     CROSSING_WIDTH = 10.0
     CROSSING_HEIGHT = 10.0
-    ROAD_WIDTH = 3.0
+    ROAD_WIDTH = 5.0
     
     # ==================== 行人参数 ====================
     PEDESTRIAN_COUNT = 10
-    PEDESTRIAN_RADIUS = 0.125  # 减半
+    PEDESTRIAN_RADIUS = 0.12  # 减半
     PEDESTRIAN_SPEED_MIN = 1.0
-    PEDESTRIAN_SPEED_MAX = 1.5
+    PEDESTRIAN_SPEED_MAX = 1.2
     PEDESTRIAN_MASS = 70.0
     
     # ==================== 自行车参数 ====================
     BICYCLE_COUNT = 4
-    BICYCLE_RADIUS = 0.25  # 减半
-    BICYCLE_SPEED_MIN = 3.0
-    BICYCLE_SPEED_MAX = 5.0
+    BICYCLE_RADIUS = 0.15  # 减半
+    BICYCLE_SPEED_MIN = 1.0
+    BICYCLE_SPEED_MAX = 2.0
     BICYCLE_MASS = 80.0
     
     # ==================== 社会力模型参数 ====================
     # 目标吸引力
-    DESIRED_FORCE_FACTOR = 0.5  # 减半
+    DESIRED_FORCE_FACTOR = 1  # 减半
     RELAXATION_TIME = 0.5
     
     # 避让力参数
     SOCIAL_FORCE_A = 3000.0  # 增大强度
-    SOCIAL_FORCE_B = 0.2  # 增大作用范围至约2m
+    SOCIAL_FORCE_B = 0.075  # 缩短避让距离
     
     # 边界参数
-    ROAD_BORDER_THRESHOLD = 0.1
+    ROAD_BORDER_THRESHOLD = 0.01
     
     # 视野参数
-    VISION_ANGLE = 180.0
-    VISION_RANGE = 4.0  # 减小到4m
+    VISION_ANGLE = 120.0
+    VISION_RANGE = 1.0  # 减小视野范围
     
     # ==================== 仿真参数 ====================
     DT = 0.05
     MAX_SIMULATION_TIME = 60.0
     
     # ==================== 实体生成参数 ====================
-    MAX_ACTIVE_ENTITIES = 30  # 增加最大活跃实体数
+    MAX_ACTIVE_ENTITIES = 500  # 增加最大活跃实体数
     PEDESTRIAN_SPAWN_PROBABILITY = 0.3   # 增加行人生成概率
     BICYCLE_SPAWN_PROBABILITY = 0.12     # 增加自行车生成概率
     MIN_SPAWN_INTERVAL = 0.5             # 减少生成间隔

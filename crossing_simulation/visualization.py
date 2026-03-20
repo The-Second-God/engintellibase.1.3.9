@@ -248,6 +248,7 @@ class Visualizer:
         stats_str = (
             f"Active: {stats['active_entities']}\n"
             f"Completed: {stats['completed_count']}\n"
+            f"Total Spawned: {stats['total_spawned']}\n"
             f"Collisions: {state['collision_count']}\n"
             f"Avg Time: {stats['avg_travel_time']:.2f}s"
         )

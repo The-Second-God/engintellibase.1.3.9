@@ -7,6 +7,7 @@ from .environment import CrossingEnvironment, Wall
 from .social_force import SocialForceModel
 from .simulation import SimulationEngine, SimulationRunner
 from .visualization import Visualizer, AnimatedVisualizer
+from .optimization import PSOOptimizer, load_best_params
 
 __all__ = [
     'Config',
@@ -15,4 +16,5 @@ __all__ = [
     'SocialForceModel',
     'SimulationEngine', 'SimulationRunner',
     'Visualizer', 'AnimatedVisualizer',
+    'PSOOptimizer', 'load_best_params',
 ]

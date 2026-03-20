@@ -22,11 +22,15 @@ class SimulationEngine:
         
         self.collision_count = 0
         self.completed_count = 0
+        self.total_spawned = 0
         
         self.last_spawn_time = 0.0
         
         self.on_step_complete: Optional[Callable[[Dict], None]] = None
         self.on_entity_complete: Optional[Callable[[Entity], None]] = None
+        
+        # 保存已完成的实体记录
+        self.completed_entities = []
     
     def initialize(self):
         self.entity_manager.initialize()
@@ -34,6 +38,8 @@ class SimulationEngine:
         self.frame = 0
         self.collision_count = 0
         self.completed_count = 0
+        self.total_spawned = 0
+        self.completed_entities = []
         self.is_running = True
         self.is_paused = False
     
@@ -57,12 +63,17 @@ class SimulationEngine:
             
             self.social_force.update_entity(entity, neighbors, dt)
             
+            # 更新实体在空间网格中的位置
+            self.entity_manager.spatial_grid.update_entity(entity)
+            
             collisions = self.social_force.check_collision(entity, neighbors)
             self.collision_count += collisions
             
             if entity.has_reached_target():
                 entity.is_active = False
                 self.completed_count += 1
+                # 保存已完成实体的记录
+                self.completed_entities.append(entity)
                 if self.on_entity_complete:
                     self.on_entity_complete(entity)
         
@@ -91,12 +102,14 @@ class SimulationEngine:
             return
         
         if random.random() < Config.PEDESTRIAN_SPAWN_PROBABILITY:
-            self.entity_manager.create_entity('pedestrian')
-            self.last_spawn_time = self.time
+            if self.entity_manager.create_entity('pedestrian'):
+                self.total_spawned += 1
+                self.last_spawn_time = self.time
         
         if random.random() < Config.BICYCLE_SPAWN_PROBABILITY:
-            self.entity_manager.create_entity('bicycle')
-            self.last_spawn_time = self.time
+            if self.entity_manager.create_entity('bicycle'):
+                self.total_spawned += 1
+                self.last_spawn_time = self.time
     
     def _resolve_all_collisions(self):
         entities = self.entity_manager.all_entities
@@ -112,6 +125,18 @@ class SimulationEngine:
                     self.social_force.resolve_collision(entity1, entity2)
     
     def _get_state(self) -> Dict[str, Any]:
+        completed = self.completed_entities
+        active = [e for e in self.entity_manager.all_entities if e.is_active]
+        
+        # 计算统计信息
+        stats = {
+            'active_entities': len(active),
+            'completed_count': self.completed_count,
+            'total_spawned': self.total_spawned,
+            'avg_travel_time': sum(e.travel_time for e in completed) / len(completed) if completed else 0,
+            'total_distance': sum(e.distance_traveled for e in completed) if completed else 0
+        }
+        
         return {
             'time': self.time,
             'frame': self.frame,
@@ -119,9 +144,10 @@ class SimulationEngine:
             'is_paused': self.is_paused,
             'collision_count': self.collision_count,
             'completed_count': self.completed_count,
-            'active_count': sum(1 for e in self.entity_manager.all_entities if e.is_active),
+            'total_spawned': self.total_spawned,
+            'active_count': len(active),
             'entities': self.entity_manager.all_entities.copy(),
-            'statistics': self.entity_manager.get_statistics()
+            'statistics': stats
         }
     
     def pause(self):
@@ -134,18 +160,33 @@ class SimulationEngine:
         self.is_running = False
     
     def get_fitness(self) -> float:
-        completed = [e for e in self.entity_manager.all_entities if not e.is_active]
+        completed = self.completed_entities
         
         if not completed:
             return 0.0
         
-        avg_time = sum(e.travel_time for e in completed) / len(completed)
+        # 收集所有通行时间
+        travel_times = [e.travel_time for e in completed]
+        travel_times.sort()
         
+        # 计算平均通行时间（整体效率）
+        avg_time = sum(travel_times) / len(travel_times)
+        
+        # 计算最慢10%实体的平均时间
+        slow_count = max(1, int(len(travel_times) * 0.1))
+        slow_times = travel_times[-slow_count:]
+        slow_avg_time = sum(slow_times) / len(slow_times)
+        
+        # 计算碰撞惩罚
         collision_penalty = self.collision_count * 10.0
         
-        efficiency = 1.0 / (avg_time + 0.1)
+        # 计算各部分权重
+        efficiency = 1.0 / (avg_time + 0.1) * 0.75
+        slow_penalty = 1.0 / (slow_avg_time + 0.1) * 0.20
+        collision_factor = max(0, 1.0 - collision_penalty * 0.01) * 0.05
         
-        fitness = efficiency - collision_penalty * 0.01
+        # 总适应度
+        fitness = efficiency + slow_penalty + collision_factor
         
         return max(0, fitness)
     
@@ -157,7 +198,8 @@ class SimulationEngine:
             'total_time': self.time,
             'total_frames': self.frame,
             'collisions': self.collision_count,
-            'completed_entities': len(completed),
+            'completed_entities': self.completed_count,
+            'total_spawned': self.total_spawned,
             'active_entities': len(active),
             'avg_travel_time': sum(e.travel_time for e in completed) / len(completed) if completed else 0,
             'avg_distance': sum(e.distance_traveled for e in completed) / len(completed) if completed else 0,

@@ -7,7 +7,50 @@ from enum import Enum
 from dataclasses import dataclass
 from typing import List, Tuple, Optional
 
+import numpy as np
+
 from .config import Config
+
+
+class SpatialGrid:
+    def __init__(self, cell_size=1.0):
+        self.cell_size = cell_size
+        self.grid = {}
+    
+    def add_entity(self, entity):
+        key = self._get_cell_key(entity.position)
+        if key not in self.grid:
+            self.grid[key] = []
+        self.grid[key].append(entity)
+    
+    def remove_entity(self, entity):
+        key = self._get_cell_key(entity.position)
+        if key in self.grid:
+            self.grid[key] = [e for e in self.grid[key] if e.id != entity.id]
+            if not self.grid[key]:
+                del self.grid[key]
+    
+    def update_entity(self, entity):
+        self.remove_entity(entity)
+        self.add_entity(entity)
+    
+    def get_nearby_entities(self, position, radius):
+        nearby = []
+        # 计算需要检查的网格范围
+        cell_radius = math.ceil(radius / self.cell_size)
+        center_key = self._get_cell_key(position)
+        
+        # 检查周围的网格
+        for i in range(-cell_radius, cell_radius + 1):
+            for j in range(-cell_radius, cell_radius + 1):
+                key = (center_key[0] + i, center_key[1] + j)
+                if key in self.grid:
+                    nearby.extend(self.grid[key])
+        
+        return nearby
+    
+    def _get_cell_key(self, position):
+        return (int(position.x / self.cell_size), int(position.y / self.cell_size))
 
 
 class Direction(Enum):
@@ -77,6 +120,13 @@ class Entity:
         self.target = self._calculate_target()
         self.desired_direction = (self.target - self.position).normalize()
         
+        # 添加NumPy数组属性
+        self.position_np = np.array([position.x, position.y], dtype=np.float32)
+        self.velocity_np = np.array([0.0, 0.0], dtype=np.float32)
+        self.acceleration_np = np.array([0.0, 0.0], dtype=np.float32)
+        self.target_np = np.array([self.target.x, self.target.y], dtype=np.float32)
+        self.desired_direction_np = np.array([self.desired_direction.x, self.desired_direction.y], dtype=np.float32)
+        
         self.trail: List[Tuple[float, float]] = []
         self.is_active = True
         self.travel_time = 0.0
@@ -100,8 +150,16 @@ class Entity:
                 self.trail.pop(0)
     
     def has_reached_target(self) -> bool:
-        distance = (self.target - self.position).magnitude()
-        return distance < self.radius
+        # 基于边界的完成判定
+        if self.direction == Direction.NORTH and self.position.y > Config.CROSSING_HEIGHT:
+            return True
+        elif self.direction == Direction.SOUTH and self.position.y < 0:
+            return True
+        elif self.direction == Direction.EAST and self.position.x > Config.CROSSING_WIDTH:
+            return True
+        elif self.direction == Direction.WEST and self.position.x < 0:
+            return True
+        return False
     
     def get_forward_direction(self) -> Vector2D:
         return self.desired_direction
@@ -143,6 +201,7 @@ class EntityManager:
         self.bicycles: List[Bicycle] = []
         self.all_entities: List[Entity] = []
         self._next_id = 0
+        self.spatial_grid = SpatialGrid(cell_size=Config.VISION_RANGE)
     
     def _generate_spawn_position(self, direction: Direction) -> Vector2D:
         road_half = Config.ROAD_WIDTH / 2
@@ -185,6 +244,7 @@ class EntityManager:
             )
             self.pedestrians.append(pedestrian)
             self.all_entities.append(pedestrian)
+            self.spatial_grid.add_entity(pedestrian)
             self._next_id += 1
     
     def create_bicycles(self, count: int = None):
@@ -204,6 +264,7 @@ class EntityManager:
             )
             self.bicycles.append(bicycle)
             self.all_entities.append(bicycle)
+            self.spatial_grid.add_entity(bicycle)
             self._next_id += 1
     
     def create_entity(self, entity_type: str) -> bool:
@@ -232,6 +293,7 @@ class EntityManager:
             self.bicycles.append(entity)
         
         self.all_entities.append(entity)
+        self.spatial_grid.add_entity(entity)
         self._next_id += 1
         return True
     
@@ -239,17 +301,27 @@ class EntityManager:
         pass  # 不再一次性生成所有实体
     
     def get_neighbors_in_vision(self, entity: Entity) -> List[Entity]:
+        # 首先通过空间网格获取附近实体
+        nearby_entities = self.spatial_grid.get_nearby_entities(
+            entity.position, Config.VISION_RANGE
+        )
+        
+        # 然后检查视野
         neighbors = []
-        for other in self.all_entities:
+        for other in nearby_entities:
             if other.id != entity.id and other.is_active:
                 if entity.is_in_vision(other):
                     neighbors.append(other)
         return neighbors
     
     def remove_inactive(self):
+        inactive = [e for e in self.all_entities if not e.is_active]
         self.all_entities = [e for e in self.all_entities if e.is_active]
         self.pedestrians = [p for p in self.pedestrians if p.is_active]
         self.bicycles = [b for b in self.bicycles if b.is_active]
+        
+        for e in inactive:
+            self.spatial_grid.remove_entity(e)
     
     def get_statistics(self) -> dict:
         active_count = sum(1 for e in self.all_entities if e.is_active)
