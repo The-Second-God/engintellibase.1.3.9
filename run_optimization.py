@@ -18,8 +18,8 @@ print("=" * 60)
 
 optimizer = PSOOptimizer(
     param_ranges=param_ranges,
-    population_size=100,  # 粒子数量
-    max_iterations=100    # 迭代次数
+    population_size=50,  # 粒子数量
+    max_iterations=50    # 迭代次数
 )
 
 print("开始优化过程...")

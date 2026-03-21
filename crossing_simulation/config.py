@@ -8,18 +8,18 @@ class Config:
     # ==================== 环境参数 ====================
     CROSSING_WIDTH = 10.0
     CROSSING_HEIGHT = 10.0
-    ROAD_WIDTH = 5.0
+    ROAD_WIDTH = 6.0
     
     # ==================== 行人参数 ====================
     PEDESTRIAN_COUNT = 10
-    PEDESTRIAN_RADIUS = 0.12  # 减半
+    PEDESTRIAN_RADIUS = 0.20  # 减半
     PEDESTRIAN_SPEED_MIN = 1.0
     PEDESTRIAN_SPEED_MAX = 1.2
     PEDESTRIAN_MASS = 70.0
     
     # ==================== 自行车参数 ====================
     BICYCLE_COUNT = 4
-    BICYCLE_RADIUS = 0.15  # 减半
+    BICYCLE_RADIUS = 0.25  # 减半
     BICYCLE_SPEED_MIN = 1.0
     BICYCLE_SPEED_MAX = 2.0
     BICYCLE_MASS = 80.0
