@@ -12,14 +12,14 @@ class Config:
     
     # ==================== 行人参数 ====================
     PEDESTRIAN_COUNT = 10
-    PEDESTRIAN_RADIUS = 0.20  # 减半
+    PEDESTRIAN_RADIUS = 0.13  # 减半
     PEDESTRIAN_SPEED_MIN = 1.0
     PEDESTRIAN_SPEED_MAX = 1.2
     PEDESTRIAN_MASS = 70.0
     
     # ==================== 自行车参数 ====================
     BICYCLE_COUNT = 4
-    BICYCLE_RADIUS = 0.25  # 减半
+    BICYCLE_RADIUS = 0.16  # 减半
     BICYCLE_SPEED_MIN = 1.0
     BICYCLE_SPEED_MAX = 2.0
     BICYCLE_MASS = 80.0
